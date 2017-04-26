@@ -26,7 +26,11 @@ module Rolify
       end
 
       def in(relation, user, role_names)
-        roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
+        if user.is_a?(Array) || user.is_a?(ActiveRecord::Relation)
+          roles = user.map { |u| u.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")}.flatten.uniq
+        else
+          roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
+        end
         relation.where("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)} IN (?) AND ((resource_id = #{quote_table(relation.table_name)}.#{quote_column(relation.primary_key)}) OR (resource_id IS NULL))", roles)
       end
 
