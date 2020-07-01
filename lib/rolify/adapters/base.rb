@@ -27,7 +27,7 @@ module Rolify
       end
 
       def relation_types_for(relation)
-        relation.descendants.map(&:base_class).map(&:to_s).push(relation.to_s).uniq
+        relation.descendants.map(&:base_class).map(&:to_s).push(relation.base_class.to_s).uniq
       end
     end
 
