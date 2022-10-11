@@ -21,12 +21,16 @@ module Rolify
         resources = relation.joins("INNER JOIN #{quote_table(roles_table)} ON #{quote_table(roles_table)}.resource_type IN (#{relations}) AND
                                     (#{quote_table(roles_table)}.resource_id IS NULL OR #{quote_table(roles_table)}.resource_id = #{quote_table(relation.table_name)}.#{quote_column(relation.primary_key)})")
         resources = resources.where("#{quote_table(roles_table)}.name IN (?) AND #{quote_table(roles_table)}.resource_type IN (?)", Array(role_name), klasses)
-        resources = resources.select("#{quote_table(relation.table_name)}.*")
+        resources = resources.select("DISTINCT ON (id) #{quote_table(relation.table_name)}.*")
         resources
       end
 
       def in(relation, user, role_names)
-        roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
+        if user.is_a?(Array) || user.is_a?(ActiveRecord::Relation)
+          roles = user.map { |u| u.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")}.flatten.uniq
+        else
+          roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
+        end
         relation.where("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)} IN (?) AND ((#{quote_table(role_class.table_name)}.resource_id = #{quote_table(relation.table_name)}.#{quote_column(relation.primary_key)}) OR (#{quote_table(role_class.table_name)}.resource_id IS NULL))", roles)
       end
 
