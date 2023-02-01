@@ -26,13 +26,14 @@ module Rolify
       end
 
       def in(relation, user, role_names)
-        if user.is_a?(Array) || user.is_a?(ActiveRecord::Relation)
+        roles = if user.is_a?(Array) || user.is_a?(ActiveRecord::Relation)
           # RC: Hard-coding user_groups association for now
           # roles = user.map { |u| u.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")}.flatten.uniq
           role_class.joins(:user_groups).where(user_groups: {id: user.map(&:id)}).where(roles: {name: role_names}).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}").uniq
         else
-          roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
+          user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
         end
+
         relation.where("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)} IN (?) AND ((#{quote_table(role_class.table_name)}.resource_id = #{quote_table(relation.table_name)}.#{quote_column(relation.primary_key)}) OR (#{quote_table(role_class.table_name)}.resource_id IS NULL))", roles)
       end
 

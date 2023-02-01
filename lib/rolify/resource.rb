@@ -16,11 +16,14 @@ module Rolify
           role_name = role_name.to_s
         end
 
+        # SHOULD be:
+        # user ? self.resource_adapter.in(resources, user, role_name) : self.resource_adapter.resources_find(self.role_table_name, self, role_name)
+        # We are making an extra query entirely.  In any case, make this change once migration is stable
         resources = self.resource_adapter.resources_find(self.role_table_name, self, role_name) #.map(&:id)
         user ? self.resource_adapter.in(resources, user, role_name) : resources
       end
       alias :with_roles :with_role
-      alias :find_as :with_role 
+      alias :find_as :with_role
       alias :find_multiple_as :with_role
 
 
@@ -28,8 +31,8 @@ module Rolify
         self.resource_adapter.all_except(self, self.find_as(role_name, user))
       end
       alias :without_roles :without_role
-      alias :except_as :without_role 
-      alias :except_multiple_as :without_role 
+      alias :except_as :without_role
+      alias :except_multiple_as :without_role
 
 
 
@@ -38,7 +41,7 @@ module Rolify
       end
 
 
-      
+
     end
 
     def applied_roles
