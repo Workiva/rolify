@@ -27,8 +27,9 @@ module Rolify
 
       def in(relation, user, role_names)
         if user.is_a?(Array) || user.is_a?(ActiveRecord::Relation)
-          role_class.joins(user_groups_roles: :user_groups).where(user_groups: {id: user.map(&:id)}).where(roles: {name: role_names}).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}").uniq
+          # RC: Hard-coding user_groups association for now
           # roles = user.map { |u| u.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")}.flatten.uniq
+          role_class.joins(:user_groups).where(user_groups: {id: user.map(&:id)}).where(roles: {name: role_names}).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}").uniq
         else
           roles = user.roles.where(:name => role_names).select("#{quote_table(role_class.table_name)}.#{quote_column(role_class.primary_key)}")
         end
